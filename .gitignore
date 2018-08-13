@@ -6,4 +6,4 @@
 *.pyc
 
 #debug docker file
-./build/images/mx-operator/Dockerfile_sleep
+build/images/mx-operator/Dockerfile_sleep

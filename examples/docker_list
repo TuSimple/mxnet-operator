@@ -1,4 +1,5 @@
-jzp1025/mxnet:test     mx_job_dist.yaml
+jzp1025/mxnet:test     mx_job_dist.yaml cpu
+jzp1025/mxnet:gpu      mx_job_dist.yaml gpu
 jzp1025/test:tmp       scheduler etc;
 jzp1025/mx-operator:auto      mx-operator auto-run operator
 jzp1025/mx-operator:test     mx-operaotor :  running sleep.py ; run operator yourself

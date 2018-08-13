@@ -5,10 +5,11 @@
 - [Motivation](#motivation)
 - [Goals](#goals)
 - [Non-Goals](#non-goals)
-- [API (CRD and MXJob)](#api-crd-and-MXJob-examples)
+- [API (CRD and MXJob)](#api-crd-and-MXJob)
   - [Custom Resource Definition](#custom-resource-definition)
   - [MXJob Example](#mxjob-example)
 - [Design](#design)
+- [User Guide](#user-guide)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -25,7 +26,6 @@ A Kubeflow user should be able to run training using MXNet as easily as then can
 This proposal defines the following:
 - A MXNet operator
 - A way to deploy the operator with ksonnet
-- A single pod MXNet example
 - A distributed MXNet example
 
 ## Non-Goals
@@ -107,5 +107,6 @@ The environment variables will be set in each pod due to the mxReplicaType when 
 ## Design
 This is an implementaion of the MXNet distributed design patterns, found [here](https://mxnet.incubator.apache.org/versions/master/faq/model_parallel_lstm.html), via the lense of TFJob found [here](https://github.com/kubeflow/tf-operator). In the case of Kubernetes, because the operator is able to easily apply configurations to each process, we will use the environment variable initialization method found [here](https://mxnet.incubator.apache.org/versions/master/faq/distributed_training.html).
 
-
+## User Guide
+Please refer to the User Guide, found [here](https://github.com/TuSimple/mxnet-operator/blob/master/README.md).
 

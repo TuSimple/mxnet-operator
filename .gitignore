@@ -1,0 +1,9 @@
+
+# Files created by Gogland IDE
+.idea/
+
+# Compiled python files.
+*.pyc
+
+#debug docker file
+./build/images/mx-operator/Dockerfile_sleep

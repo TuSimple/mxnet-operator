@@ -5,12 +5,10 @@
 - [Motivation](#motivation)
 - [Goals](#goals)
 - [Non-Goals](#non-goals)
-- [API (CRD and resulting objects)](#api-crd-and-resulting-objects)
+- [API (CRD and MXJob)](#api-crd-and-MXJob-examples)
   - [Custom Resource Definition](#custom-resource-definition)
-  - [Resulting Master](#resulting-master)
-  - [Resulting Worker](#resulting-worker)
+  - [MXJob Example](#mxjob-example)
 - [Design](#design)
-- [Alternatives Considered](#alternatives-considered)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -59,7 +57,7 @@ This MXNetJob resembles the existing TFJob for the tf-operator.  The main differ
 
 Job Roles Contents : 1 Scheduler , N Server , M worker
 
-### MXJob example
+### MXJob Example
 ```yaml
 apiVersion: "kubeflow.org/v1alpha1"
 kind: "MXJob"

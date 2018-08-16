@@ -6,5 +6,8 @@ metadata:
 spec:
   containers:
   - name: busybox
-    image: jzp1025/test:tmp
+    image: jzp1025/mxnet:gpu_sleep
+    resources:
+      limits:
+        nvidia.com/gpu: 1
   restartPolicy: Always

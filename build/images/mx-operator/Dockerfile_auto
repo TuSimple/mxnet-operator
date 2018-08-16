@@ -2,7 +2,7 @@ FROM golang:1.8.2
 
 RUN mkdir -p /opt/mlkube
 RUN mkdir -p /opt/mlkube/test
-COPY mx_operator /opt/mlkube
+COPY mx-operator /opt/mlkube
 RUN chmod a+x /opt/mlkube/mx-operator
 
-ENTRYPOINT ["/opt/mlkube/mx-operator", "-alsologtostderr"]
+ENTRYPOINT /bin/bash

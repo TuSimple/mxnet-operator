@@ -7,7 +7,8 @@
 // @optionalParam args string null Comma separated list of arguments to pass to the job
 // @optionalParam image string jzp1025/mxnet:test The docker image to use for the job.
 // @optionalParam image_gpu string jzp1025/mxnet:gpu_job The docker image to use when using GPUs.
-// @optionalParam num_masters number 1 The number of masters to use
+// @optionalParam num_schedulers number 1 The number of scheduler to use
+// @optionalParam num_servers number 1 The number of servers to use
 // @optionalParam num_workers number 1 The number of workers to use
 // @optionalParam num_gpus number 0 The number of GPUs to attach to workers.
 
@@ -59,22 +60,26 @@ local args =
 
 local image = params.image;
 local imageGpu = params.image_gpu;
-local numMasters = params.num_masters;
+local numSchedulers = params.num_schedulers;
+local numServers = params.num_servers;
 local numWorkers = params.num_workers;
 local numGpus = params.num_gpus;
+
+local schedulerSpec = util.mxnetJobReplica("SCHEDULER", numSchedulers, args, image);
 
 local workerSpec = if numGpus > 0 then
   util.mxnetJobReplica("WORKER", numWorkers, args, imageGpu, numGpus)
 else
   util.,xmetJobReplica("WORKER", numWorkers, args, image);
 
-local masterSpec = util.mxnetJobReplica("MASTER", numMasters, args, image);
-local replicas = [masterSpec, workerSpec];
+local serverSpec = util.mxnetJobReplica("SERVER", numServers, args, image);
+
+local replicas = [schedulerSpec, serverSpec, workerSpec];
 
 
 local job = {
   apiVersion: "kubeflow.org/v1alpha1",
-  kind: "MXNetJob",
+  kind: "MXJob",
   metadata: {
     name: name,
     namespace: namespace,

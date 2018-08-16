@@ -14,7 +14,7 @@
       apiVersion: "apiextensions.k8s.io/v1beta1",
       kind: "CustomResourceDefinition",
       metadata: {
-        name: "mxnetjobs.kubeflow.org",
+        name: "mxjobs.kubeflow.org",
       },
       spec: {
         group: "kubeflow.org",
@@ -185,7 +185,7 @@
             "kubeflow.org",
           ],
           resources: [
-            "mxnetjobs",
+            "mxjobs",
           ],
           verbs: [
             "*",

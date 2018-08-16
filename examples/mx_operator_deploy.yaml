@@ -18,7 +18,7 @@ spec:
       - name: mx-job-operator
         image: jzp1025/mx-operator:auto
         command: ["/opt/mlkube/mx-operator"]
-        args: ["-alsologtostderr","-v=1"]
+        args: ["--alsologtostderr","-v=1"]
         imagePullPolicy: Always
         env:
         - name: MY_POD_NAMESPACE

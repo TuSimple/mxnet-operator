@@ -5,5 +5,3 @@
 # Compiled python files.
 *.pyc
 
-#debug docker file
-build/images/mx-operator/Dockerfile_sleep

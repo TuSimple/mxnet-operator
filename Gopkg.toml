@@ -1,4 +1,4 @@
-ignored = ["github.com/kubeflow/mx-operator"]
+ignored = ["github.com/kubeflow/mxnet-operator"]
 
 required = [
   "k8s.io/code-generator/cmd/client-gen",

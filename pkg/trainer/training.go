@@ -452,7 +452,7 @@ func (j *TrainingJob) SchedulerName() string {
 
 // genPdbName generate a new pdb name
 func (j *TrainingJob) genPdbName() string {
-	return "mx-job-pdb-" + j.job.ObjectMeta.Name
+	return "mxnet-job-pdb-" + j.job.ObjectMeta.Name
 }
 
 func (j *TrainingJob) CreatePdb(nrReplicas int32) (*v1beta1.PodDisruptionBudget, error) {

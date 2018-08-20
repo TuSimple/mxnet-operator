@@ -13,9 +13,6 @@ spec:
           containers:
             - image: jzp1025/mxnet:gpu_job
               name: mxnet
-              command: ["python"]
-              args: ["train_mnist.py"]
-              workingDir: "/incubator-mxnet/example/image-classification"
           restartPolicy: OnFailure
     - replicas: 2 
       mxReplicaType: SERVER
@@ -24,9 +21,6 @@ spec:
           containers:
             - image: jzp1025/mxnet:gpu_job
               name: mxnet
-              command: ["python"]
-              args: ["train_mnist.py"]
-              workingDir: "/incubator-mxnet/example/image-classification"
           restartPolicy: OnFailure
     - replicas: 2
       mxReplicaType: WORKER
@@ -37,7 +31,6 @@ spec:
               name: mxnet
               command: ["python"]
               args: ["train_mnist.py","--num-epochs","10","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
-              workingDir: "/incubator-mxnet/example/image-classification"
               resources:
                 limits:
                   nvidia.com/gpu: 1

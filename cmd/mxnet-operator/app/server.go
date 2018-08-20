@@ -51,7 +51,7 @@ var (
 	retryPeriod   = 3 * time.Second
 )
 
-// Run starts the mx-operator service
+// Run starts the mxnet-operator service
 func Run(opt *options.ServerOption) error {
 
 	// Check if the -version flag was passed and, if so, print the version and exit.
@@ -104,12 +104,12 @@ func Run(opt *options.ServerOption) error {
 
 	// Prepare event clients.
 	eventBroadcaster := record.NewBroadcaster()
-	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "mx-operator"})
+	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "mxnet-operator"})
 
 	rl := &resourcelock.EndpointsLock{
 		EndpointsMeta: metav1.ObjectMeta{
 			Namespace: namespace,
-			Name:      "mx-operator",
+			Name:      "mxnet-operator",
 		},
 		Client: leaderElectionClient.CoreV1(),
 		LockConfig: resourcelock.ResourceLockConfig{

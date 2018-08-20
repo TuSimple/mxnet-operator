@@ -30,18 +30,11 @@ CODEGEN_PKG=${CODEGEN_PKG:-$(cd ${SCRIPT_ROOT}; ls -d -1 ./vendor/k8s.io/code-ge
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
 cd ${SCRIPT_ROOT}
 ${CODEGEN_PKG}/generate-groups.sh "all" \
- github.com/kubeflow/mx-operator/pkg/client github.com/kubeflow/mx-operator/pkg/apis \
+ github.com/kubeflow/mxnet-operator/pkg/client github.com/kubeflow/mxnet-operator/pkg/apis \
  mxnet:v1alpha1 \
  --go-header-file hack/boilerplate/boilerplate.go.txt
 
 # Notice: The code in code-generator does not generate defaulter by default.
 echo "Generating defaulters for v1alpha1"
-${GOPATH}/bin/defaulter-gen  --input-dirs github.com/kubeflow/mx-operator/pkg/apis/mxnet/v1alpha1 -O zz_generated.defaults --go-header-file hack/boilerplate/boilerplate.go.txt "$@"
+${GOPATH}/bin/defaulter-gen  --input-dirs github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/v1alpha1 -O zz_generated.defaults --go-header-file hack/boilerplate/boilerplate.go.txt "$@"
 
-#echo "Generating defaulters for v1alpha2"
-#${GOPATH}/bin/defaulter-gen  --input-dirs github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha2 -O zz_generated.defaults --go-header-file hack/boilerplate/boilerplate.go.txt "$@"
-#cd - > /dev/null
-
-#echo "Generating OpenAPI specification for v1alpha2"
-#${GOPATH}/bin/openapi-gen --input-dirs github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha2,k8s.io/api/core/v1 --output-package github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha2 --go-header-file hack/boilerplate/boilerplate.go.txt "$@"
-#cd - > /dev/null

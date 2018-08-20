@@ -16,9 +16,6 @@ spec:
               command: ["python"]
               args: ["train_mnist.py"]
               workingDir: "/incubator-mxnet/example/image-classification"
-              resources:
-                limits:
-                  nvidia.com/gpu: 1
           restartPolicy: OnFailure
     - replicas: 2 
       mxReplicaType: SERVER
@@ -30,9 +27,6 @@ spec:
               command: ["python"]
               args: ["train_mnist.py"]
               workingDir: "/incubator-mxnet/example/image-classification"
-              resources:
-                limits:
-                  nvidia.com/gpu: 1
           restartPolicy: OnFailure
     - replicas: 2
       mxReplicaType: WORKER

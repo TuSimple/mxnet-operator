@@ -60,7 +60,7 @@ incubator-mxnet : v1.2.0
 
 ## Installing the MXJob CRD and operator on your k8s cluster
 
-git clone https://github.com/jzp1025/mx-operator.git
+git clone https://github.com/TuSimple/mxnet-operator.git
 
 kubectl create -f ./examples/crd/crd.yaml
 

@@ -28,10 +28,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
-	mxv1alpha1 "github.com/kubeflow/mx-operator/pkg/apis/mxnet/v1alpha1"
-	"github.com/kubeflow/mx-operator/pkg/util/k8sutil"
-	"github.com/kubeflow/mx-operator/pkg/apis/mxnet/helper"
-	"github.com/kubeflow/mx-operator/pkg/util"
+	mxv1alpha1 "github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/v1alpha1"
+	"github.com/kubeflow/mxnet-operator/pkg/util/k8sutil"
+	"github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/helper"
+	"github.com/kubeflow/mxnet-operator/pkg/util"
 )
 
 const (

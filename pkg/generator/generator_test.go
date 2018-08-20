@@ -20,45 +20,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-
-	tfv1alpha2 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha2"
 )
 
-func TestGenOwnerReference(t *testing.T) {
-	testName := "test-tfjob"
-	testUID := types.UID("test-UID")
-	tfJob := &tfv1alpha2.TFJob{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: testName,
-			UID:  testUID,
-		},
-	}
-
-	ref := GenOwnerReference(tfJob)
-	if ref.UID != testUID {
-		t.Errorf("Expected UID %s, got %s", testUID, ref.UID)
-	}
-	if ref.Name != testName {
-		t.Errorf("Expected Name %s, got %s", testName, ref.Name)
-	}
-	if ref.APIVersion != tfv1alpha2.SchemeGroupVersion.String() {
-		t.Errorf("Expected APIVersion %s, got %s", tfv1alpha2.SchemeGroupVersion.String(), ref.APIVersion)
-	}
-}
-
-func TestGenLabels(t *testing.T) {
-	testKey := "test/key"
-	expctedKey := "test-key"
-
-	labels := GenLabels(testKey)
-
-	if labels[labelTFJobName] != expctedKey {
-		t.Errorf("Expected %s %s, got %s", labelTFJobName, expctedKey, labels[labelTFJobName])
-	}
-	if labels[LabelGroupName] != tfv1alpha2.GroupName {
-		t.Errorf("Expected %s %s, got %s", LabelGroupName, tfv1alpha2.GroupName, labels[LabelGroupName])
-	}
-}
 
 func TestGenGeneralName(t *testing.T) {
 	testRType := "worker"
@@ -69,24 +32,5 @@ func TestGenGeneralName(t *testing.T) {
 	name := GenGeneralName(testKey, testRType, testIndex)
 	if name != expectedName {
 		t.Errorf("Expected name %s, got %s", expectedName, name)
-	}
-}
-
-func TestConvertTFJobToUnstructured(t *testing.T) {
-	testName := "test-tfjob"
-	testUID := types.UID("test-UID")
-	tfJob := &tfv1alpha2.TFJob{
-		TypeMeta: metav1.TypeMeta{
-			Kind: tfv1alpha2.Kind,
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: testName,
-			UID:  testUID,
-		},
-	}
-
-	_, err := ConvertTFJobToUnstructured(tfJob)
-	if err != nil {
-		t.Errorf("Expected error to be nil while got %v", err)
 	}
 }

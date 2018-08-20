@@ -30,13 +30,13 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/kubeflow/mx-operator/pkg/apis/mxnet/helper"
-	mxv1alpha1 "github.com/kubeflow/mx-operator/pkg/apis/mxnet/v1alpha1"
-	"github.com/kubeflow/mx-operator/pkg/apis/mxnet/validation"
-	mxjobclient "github.com/kubeflow/mx-operator/pkg/client/clientset/versioned"
-	"github.com/kubeflow/mx-operator/pkg/client/clientset/versioned/scheme"
-	"github.com/kubeflow/mx-operator/pkg/util"
-	train_util "github.com/kubeflow/mx-operator/pkg/util/train"
+	"github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/helper"
+	mxv1alpha1 "github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/v1alpha1"
+	"github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/validation"
+	mxjobclient "github.com/kubeflow/mxnet-operator/pkg/client/clientset/versioned"
+	"github.com/kubeflow/mxnet-operator/pkg/client/clientset/versioned/scheme"
+	"github.com/kubeflow/mxnet-operator/pkg/util"
+	train_util "github.com/kubeflow/mxnet-operator/pkg/util/train"
 )
 
 // TrainingJob represents a training job specification.

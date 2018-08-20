@@ -17,8 +17,8 @@ package validation
 import (
 	"fmt"
 
-	mxv1 "github.com/kubeflow/mx-operator/pkg/apis/mxnet/v1alpha1"
-	"github.com/kubeflow/mx-operator/pkg/util"
+	mxv1 "github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/v1alpha1"
+	"github.com/kubeflow/mxnet-operator/pkg/util"
 )
 
 // ValidateMXJobSpec checks that the MXJobSpec is valid.

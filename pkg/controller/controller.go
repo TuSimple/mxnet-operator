@@ -35,12 +35,12 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	"github.com/juju/ratelimit"
-	mxv1alpha1 "github.com/kubeflow/mx-operator/pkg/apis/mxnet/v1alpha1"
-	mxjobclient "github.com/kubeflow/mx-operator/pkg/client/clientset/versioned"
-	kubeflowscheme "github.com/kubeflow/mx-operator/pkg/client/clientset/versioned/scheme"
-	informers "github.com/kubeflow/mx-operator/pkg/client/informers/externalversions"
-	listers "github.com/kubeflow/mx-operator/pkg/client/listers/kubeflow/v1alpha1"
-	"github.com/kubeflow/mx-operator/pkg/trainer"
+	mxv1alpha1 "github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/v1alpha1"
+	mxjobclient "github.com/kubeflow/mxnet-operator/pkg/client/clientset/versioned"
+	kubeflowscheme "github.com/kubeflow/mxnet-operator/pkg/client/clientset/versioned/scheme"
+	informers "github.com/kubeflow/mxnet-operator/pkg/client/informers/externalversions"
+	listers "github.com/kubeflow/mxnet-operator/pkg/client/listers/kubeflow/v1alpha1"
+	"github.com/kubeflow/mxnet-operator/pkg/trainer"
 )
 
 const (

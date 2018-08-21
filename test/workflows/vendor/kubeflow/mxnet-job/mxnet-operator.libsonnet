@@ -70,6 +70,7 @@
                 ],
                 image: image,
                 name: "mxnet-operator",
+                imagePullPolicy: "Always",
                 volumeMounts: [
                   {
                     mountPath: "/etc/config",

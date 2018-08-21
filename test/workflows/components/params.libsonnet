@@ -23,7 +23,7 @@
       tfJobImage: 'gcr.io/kubeflow-images-public/tf_operator:v0.2.0',
       tfJobUiServiceType: 'ClusterIP',
       tfJobVersion: 'v1alpha2',
-      usageId: 'd0a2882f-4074-478a-af59-fce1059eca62',
+      usageId: 'b64dca9b-1b8d-494b-9c3f-a90d8e0f4ebb',
     },
     "mxnet-operator": {
       cloud: "null",

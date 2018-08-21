@@ -10679,11 +10679,11 @@
     },
   },
   meta:: {
-    v1beta2:: {
-      local apiVersion = { apiVersion: 'apps/v1beta2' },
+    v1:: {
+      local apiVersion = { apiVersion: 'rbac.authorization.k8s.io/v1' },
       // Patch is provided to give a concrete name and type to the Kubernetes PATCH request body.
-      replicaSet:: {
-        local kind = { kind: 'ReplicaSet' },
+      role:: {
+        local kind = { kind: 'Role' },
         new():: apiVersion + kind,
         mixin:: {},
       },

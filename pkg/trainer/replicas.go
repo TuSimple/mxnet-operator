@@ -532,7 +532,7 @@ func (s *MXReplicaSet) SyncPods() error {
 
 // SyncServices will try to check current services for this MXReplicaSet and try to make it as desired.
 func (s *MXReplicaSet) SyncServices() error {
-	if s.Spec.MXReplicaType == mxv1alpha1.SCHEDULER{
+	//if s.Spec.MXReplicaType == mxv1alpha1.SCHEDULER{
 		for index := int32(0); index < *s.Spec.Replicas; index++ {
 			_, err := s.ClientSet.CoreV1().Services(s.Job.job.ObjectMeta.Namespace).Get(s.genName(index), meta_v1.GetOptions{})
 
@@ -565,7 +565,7 @@ func (s *MXReplicaSet) SyncServices() error {
 			}
 			s.contextLogger.Infof("Service: %v error ++++++++++++++++++++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",err)
 		}
-	}
+	//}
 
 	return nil
 }

@@ -357,19 +357,19 @@ func (j *TrainingJob) Reconcile(config *mxv1alpha1.ControllerConfig, enableGangS
 	// Only sync pods and services if we are running.
 	if j.status.Phase == mxv1alpha1.MXJobPhaseCreating || j.status.Phase == mxv1alpha1.MXJobPhaseRunning {
 		
-		// sync services
-		for _, rc := range j.Replicas {
-			err := rc.SyncServices()
-			if err != nil {
-				j.contextLogger.Errorf("SyncServices error: %v", err)
-			}
-		}
-
 		// sync pods
 		for _, rc := range j.Replicas {
 			err := rc.SyncPods()
 			if err != nil {
 				j.contextLogger.Errorf("SyncPods error: %v", err)
+			}
+		}
+
+		// sync services
+		for _, rc := range j.Replicas {
+			err := rc.SyncServices()
+			if err != nil {
+				j.contextLogger.Errorf("SyncServices error: %v", err)
 			}
 		}
 

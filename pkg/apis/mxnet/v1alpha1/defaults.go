@@ -48,7 +48,7 @@ func SetDefaults_MXJob(obj *MXJob) {
 	if c.TerminationPolicy == nil {
 		c.TerminationPolicy = &TerminationPolicySpec{
 			Chief: &ChiefSpec{
-				ReplicaName:  "SCHEDULER",
+				ReplicaName:  "WORKER",
 				ReplicaIndex: 0,
 			},
 		}

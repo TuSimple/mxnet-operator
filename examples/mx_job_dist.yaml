@@ -30,7 +30,7 @@ spec:
             - image: mxjob/mxnet:gpu
               name: mxnet
               command: ["python"]
-              args: ["/incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","10","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
+              args: ["/incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","1","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
               resources:
                 limits:
                   nvidia.com/gpu: 1

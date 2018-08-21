@@ -12,7 +12,7 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 	log "github.com/golang/glog"
-	mxv1alpha1 "github.com/kubeflow/mxnet-operator/pkg/apis/pytorch/v1alpha1"
+	mxv1alpha1 "github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/v1alpha1"
 	mxjobclient "github.com/kubeflow/mxnet-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/mxnet-operator/pkg/util"
 	"k8s.io/api/core/v1"
@@ -25,25 +25,25 @@ import (
 )
 
 var (
-	name      = flag.String("name", "", "The name for the PyTorchJob to create..")
-	namespace = flag.String("namespace", "kubeflow", "The namespace to create the test job in.")
+	name      = flag.String("name", "", "The name for the MXJob to create..")
+	namespace = flag.String("namespace", "default", "The namespace to create the test job in.")
 	numJobs   = flag.Int("num_jobs", 1, "The number of jobs to run.")
 	timeout   = flag.Duration("timeout", 10*time.Minute, "The timeout for the test")
 	image     = flag.String("image", "", "The Test image to run")
 )
 
-type torchReplicaType torchv1alpha1.PyTorchReplicaType
+type mxReplicaType mxv1alpha1.MXReplicaType
 
-func (torchrt torchReplicaType) toSpec(replica int32) *torchv1alpha1.PyTorchReplicaSpec {
-	return &torchv1alpha1.PyTorchReplicaSpec{
+func (mxrt mxReplicaType) toSpec(replica int32) *mxv1alpha1.MXReplicaSpec {
+	return &mxv1alpha1.MXReplicaSpec{
 		Replicas:           proto.Int32(replica),
-		MasterPort:         proto.Int32(23456),
-		PyTorchReplicaType: torchv1alpha1.PyTorchReplicaType(torchrt),
+		PsRootPort:         proto.Int32(9001),
+		MXReplicaType: mxv1alpha1.MXReplicaType(mxrt),
 		Template: &v1.PodTemplateSpec{
 			Spec: v1.PodSpec{
 				Containers: []v1.Container{
 					{
-						Name:            "pytorch",
+						Name:            "mxnet",
 						Image:           *image,
 						ImagePullPolicy: "IfNotPresent",
 					},
@@ -78,28 +78,29 @@ func run() (string, error) {
 	// create the clientset
 	client := kubernetes.NewForConfigOrDie(config)
 
-	torchJobClient, err := torchjobclient.NewForConfig(config)
+	mxJobClient, err := mxjobclient.NewForConfig(config)
 	if err != nil {
 		return "", err
 	}
 
-	original := &torchv1alpha1.PyTorchJob{
+	original := &mxv1alpha1.MXJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: *name,
 			Labels: map[string]string{
 				"test.mlkube.io": "",
 			},
 		},
-		Spec: torchv1alpha1.PyTorchJobSpec{
-			ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
-				torchReplicaType(torchv1alpha1.MASTER).toSpec(1),
-				torchReplicaType(torchv1alpha1.WORKER).toSpec(3),
+		Spec: mxv1alpha1.MXJobSpec{
+			ReplicaSpecs: []*mxv1alpha1.MXReplicaSpec{
+				mxReplicaType(mxv1alpha1.SCHEDULER).toSpec(1),
+				mxReplicaType(mxv1alpha1.SERVER).toSpec(2),	
+				mxReplicaType(mxv1alpha1.WORKER).toSpec(2),
 			},
 		},
 	}
 
-	// Create PyTorchJob
-	_, err = torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Create(original)
+	// Create MXJob
+	_, err = mxJobClient.KubeflowV1alpha1().MXJobs(*namespace).Create(original)
 	if err != nil {
 		log.Errorf("Creating the job failed; %v", err)
 		return *name, err
@@ -107,52 +108,52 @@ func run() (string, error) {
 
 	// TODO(jose5918) Wait for completed state
 	// Wait for operator to reach running state
-	var torchJob *torchv1alpha1.PyTorchJob
+	var mxJob *mxv1alpha1.MXJob
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
-		torchJob, err = torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
+		mxJob, err = mxJobClient.KubeflowV1alpha1().MXJobs(*namespace).Get(*name, metav1.GetOptions{})
 		if err != nil {
-			log.Warningf("There was a problem getting PyTorchJob: %v; error %v", *name, err)
+			log.Warningf("There was a problem getting MXJob: %v; error %v", *name, err)
 		}
 
-		if torchJob.Status.State == torchv1alpha1.StateSucceeded || torchJob.Status.State == torchv1alpha1.StateFailed {
-			log.Infof("job %v finished:\n%v", *name, util.Pformat(torchJob))
+		if mxJob.Status.State == mxv1alpha1.StateSucceeded || mxJob.Status.State == mxv1alpha1.StateFailed {
+			log.Infof("job %v finished:\n%v", *name, util.Pformat(mxJob))
 			break
 		}
-		log.Infof("Waiting for job %v to finish:\n%v", *name, util.Pformat(torchJob))
+		log.Infof("Waiting for job %v to finish:\n%v", *name, util.Pformat(mxJob))
 		time.Sleep(5 * time.Second)
 	}
 
-	if torchJob == nil {
-		return *name, fmt.Errorf("Failed to get PyTorchJob %v", *name)
+	if mxJob == nil {
+		return *name, fmt.Errorf("Failed to get MXJob %v", *name)
 	}
 
-	if torchJob.Status.State != torchv1alpha1.StateSucceeded {
+	if mxJob.Status.State != mxv1alpha1.StateSucceeded {
 		// TODO(jlewi): Should we clean up the job.
-		return *name, fmt.Errorf("PyTorchJob %v did not succeed;\n %v", *name, util.Pformat(torchJob))
+		return *name, fmt.Errorf("MXJob %v did not succeed;\n %v", *name, util.Pformat(mxJob))
 	}
 
-	if torchJob.Spec.RuntimeId == "" {
-		return *name, fmt.Errorf("PyTorchJob %v doesn't have a RuntimeId", *name)
+	if mxJob.Spec.RuntimeId == "" {
+		return *name, fmt.Errorf("MXJob %v doesn't have a RuntimeId", *name)
 	}
 
 	// Loop over each replica and make sure the expected resources were created.
 	for _, r := range original.Spec.ReplicaSpecs {
-		baseName := strings.ToLower(string(r.PyTorchReplicaType))
+		baseName := strings.ToLower(string(r.MXReplicaType))
 
 		for i := 0; i < int(*r.Replicas); i++ {
-			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, torchJob.Spec.RuntimeId, i)
+			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, mxJob.Spec.RuntimeId, i)
 
-			_, err := torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
+			_, err := mxJobClient.KubeflowV1alpha1().MXJobs(*namespace).Get(*name, metav1.GetOptions{})
 
 			if err != nil {
-				return *name, fmt.Errorf("PyTorchJob %v did not create Job %v for ReplicaType %v Index %v", *name, jobName, r.PyTorchReplicaType, i)
+				return *name, fmt.Errorf("MXJob %v did not create Job %v for ReplicaType %v Index %v", *name, jobName, r.MXReplicaType, i)
 			}
 		}
 	}
 
 	// Delete the job and make sure all subresources are properly garbage collected.
-	if err := torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
-		log.Fatalf("Failed to delete PyTorchJob %v; error %v", *name, err)
+	if err := mxJobClient.KubeflowV1alpha1().MXJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
+		log.Fatalf("Failed to delete MXJob %v; error %v", *name, err)
 	}
 
 	// Define sets to keep track of Job controllers corresponding to Replicas
@@ -161,10 +162,10 @@ func run() (string, error) {
 
 	// Loop over each replica and make sure the expected resources are being deleted.
 	for _, r := range original.Spec.ReplicaSpecs {
-		baseName := strings.ToLower(string(r.PyTorchReplicaType))
+		baseName := strings.ToLower(string(r.MXReplicaType))
 
 		for i := 0; i < int(*r.Replicas); i++ {
-			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, torchJob.Spec.RuntimeId, i)
+			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, mxJob.Spec.RuntimeId, i)
 
 			jobs[jobName] = true
 		}
@@ -189,7 +190,7 @@ func run() (string, error) {
 	}
 
 	if len(jobs) > 0 {
-		return *name, fmt.Errorf("Not all Job controllers were successfully deleted for PyTorchJob %v.", *name)
+		return *name, fmt.Errorf("Not all Job controllers were successfully deleted for MXJob %v.", *name)
 	}
 
 	return *name, nil
@@ -255,21 +256,21 @@ func main() {
 				numFailed += 1
 			}
 		case <-time.After(endTime.Sub(time.Now())):
-			log.Errorf("Timeout waiting for PyTorchJob to finish.")
+			log.Errorf("Timeout waiting for MXJob to finish.")
 			fmt.Println("timeout 2")
 		}
 	}
 
 	if numSucceded+numFailed < *numJobs {
-		log.Errorf("Timeout waiting for jobs to finish; only %v of %v PyTorchJobs completed.", numSucceded+numFailed, *numJobs)
+		log.Errorf("Timeout waiting for jobs to finish; only %v of %v MXJobs completed.", numSucceded+numFailed, *numJobs)
 	}
 
 	// Generate TAP (https://testanything.org/) output
 	fmt.Println("1..1")
 	if numSucceded == *numJobs {
-		fmt.Println("ok 1 - Successfully ran PyTorchJob")
+		fmt.Println("ok 1 - Successfully ran MXJob")
 	} else {
-		fmt.Printf("not ok 1 - Running PyTorchJobs failed \n")
+		fmt.Printf("not ok 1 - Running MXJobs failed \n")
 		// Exit with non zero exit code for Helm tests.
 		os.Exit(1)
 	}

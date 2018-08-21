@@ -24,7 +24,5 @@ COPY train_mnist.py /incubator-mxnet/example/image-classification/
 
 RUN apt-get install -y dnsutils 
 
-RUN cd /incubator-mxnet/example/image-classification/
-
-CMD ["python", "train_mnist.py"]
+ENTRYPOINT ["python", "/incubator-mxnet/example/image-classification/train_mnist.py"]
 

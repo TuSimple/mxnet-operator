@@ -1,155 +1,158 @@
-// e2e provides an E2E test for TFJobs.
-//
-// The test creates TFJobs and runs various checks to ensure various operations work as intended.
-// The test is intended to run as a helm test that ensures the TFJob operator is working correctly.
-// Thus, the program returns non-zero exit status on error.
-//
-// TODO(jlewi): Do we need to make the test output conform to the TAP(https://testanything.org/)
-// protocol so we can fit into the K8s dashboard
-//
-// TODO(https://github.com/kubeflow/tf-operator/issues/21) The E2E test should actually run distributed TensorFlow.
 package main
 
 import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
 	log "github.com/golang/glog"
+	mxv1alpha1 "github.com/kubeflow/mxnet-operator/pkg/apis/pytorch/v1alpha1"
+	mxjobclient "github.com/kubeflow/mxnet-operator/pkg/client/clientset/versioned"
+	"github.com/kubeflow/mxnet-operator/pkg/util"
 	"k8s.io/api/core/v1"
 	k8s_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-
-	tfv1alpha1 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha1"
-	tfjobclient "github.com/kubeflow/tf-operator/pkg/client/clientset/versioned"
-	"github.com/kubeflow/tf-operator/pkg/util"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
 var (
-	image     = flag.String("image", "", "The Docker image containing the TF program to run.")
-	name      = flag.String("name", "", "The name for the TFJob to create..")
-	namespace = flag.String("namespace", "default", "The namespace to create the test job in.")
+	name      = flag.String("name", "", "The name for the PyTorchJob to create..")
+	namespace = flag.String("namespace", "kubeflow", "The namespace to create the test job in.")
 	numJobs   = flag.Int("num_jobs", 1, "The number of jobs to run.")
-	timeout   = flag.Duration("timeout", 5*time.Minute, "The timeout for the test")
+	timeout   = flag.Duration("timeout", 10*time.Minute, "The timeout for the test")
+	image     = flag.String("image", "", "The Test image to run")
 )
 
-type tfReplicaType tfv1alpha1.TFReplicaType
+type torchReplicaType torchv1alpha1.PyTorchReplicaType
 
-func (tfrt tfReplicaType) toSpec() *tfv1alpha1.TFReplicaSpec {
-	return &tfv1alpha1.TFReplicaSpec{
-		Replicas:      proto.Int32(1),
-		TFPort:        proto.Int32(2222),
-		TFReplicaType: tfv1alpha1.TFReplicaType(tfrt),
+func (torchrt torchReplicaType) toSpec(replica int32) *torchv1alpha1.PyTorchReplicaSpec {
+	return &torchv1alpha1.PyTorchReplicaSpec{
+		Replicas:           proto.Int32(replica),
+		MasterPort:         proto.Int32(23456),
+		PyTorchReplicaType: torchv1alpha1.PyTorchReplicaType(torchrt),
 		Template: &v1.PodTemplateSpec{
 			Spec: v1.PodSpec{
 				Containers: []v1.Container{
 					{
-						Name:  "tensorflow",
-						Image: *image,
+						Name:            "pytorch",
+						Image:           *image,
+						ImagePullPolicy: "IfNotPresent",
 					},
 				},
 				RestartPolicy: v1.RestartPolicyOnFailure,
 			},
 		},
 	}
+
 }
 
 func run() (string, error) {
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
+	var kubeconfig *string
+	if home := homeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
+	if *name == "" {
+		name = proto.String("example-job")
+	}
+
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err.Error())
 	}
+	if *image == "" {
+		log.Fatalf("--image must be provided.")
+	}
 
-	kubeCli, err := clientset.NewForConfig(config)
+	// create the clientset
+	client := kubernetes.NewForConfigOrDie(config)
+
+	torchJobClient, err := torchjobclient.NewForConfig(config)
 	if err != nil {
 		return "", err
 	}
 
-	tfJobClient, err := tfjobclient.NewForConfig(config)
-	if err != nil {
-		return "", err
-	}
-
-	if *name == "" {
-		name = proto.String("e2e-test-job-" + util.RandString(4))
-	}
-
-	original := &tfv1alpha1.TFJob{
+	original := &torchv1alpha1.PyTorchJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: *name,
 			Labels: map[string]string{
 				"test.mlkube.io": "",
 			},
 		},
-		Spec: tfv1alpha1.TFJobSpec{
-			ReplicaSpecs: []*tfv1alpha1.TFReplicaSpec{
-				tfReplicaType(tfv1alpha1.MASTER).toSpec(),
-				tfReplicaType(tfv1alpha1.PS).toSpec(),
-				tfReplicaType(tfv1alpha1.WORKER).toSpec(),
+		Spec: torchv1alpha1.PyTorchJobSpec{
+			ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
+				torchReplicaType(torchv1alpha1.MASTER).toSpec(1),
+				torchReplicaType(torchv1alpha1.WORKER).toSpec(3),
 			},
 		},
 	}
 
-	_, err = tfJobClient.KubeflowV1alpha1().TFJobs(*namespace).Create(original)
-
+	// Create PyTorchJob
+	_, err = torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Create(original)
 	if err != nil {
 		log.Errorf("Creating the job failed; %v", err)
 		return *name, err
 	}
 
-	// Wait for the job to complete for up to timeout.
-	var tfJob *tfv1alpha1.TFJob
+	// TODO(jose5918) Wait for completed state
+	// Wait for operator to reach running state
+	var torchJob *torchv1alpha1.PyTorchJob
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
-		tfJob, err = tfJobClient.KubeflowV1alpha1().TFJobs(*namespace).Get(*name, metav1.GetOptions{})
+		torchJob, err = torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
 		if err != nil {
-			log.Warningf("There was a problem getting TFJob: %v; error %v", *name, err)
+			log.Warningf("There was a problem getting PyTorchJob: %v; error %v", *name, err)
 		}
 
-		if tfJob.Status.State == tfv1alpha1.StateSucceeded || tfJob.Status.State == tfv1alpha1.StateFailed {
-			log.Infof("job %v finished:\n%v", *name, util.Pformat(tfJob))
+		if torchJob.Status.State == torchv1alpha1.StateSucceeded || torchJob.Status.State == torchv1alpha1.StateFailed {
+			log.Infof("job %v finished:\n%v", *name, util.Pformat(torchJob))
 			break
 		}
-		log.Infof("Waiting for job %v to finish:\n%v", *name, util.Pformat(tfJob))
+		log.Infof("Waiting for job %v to finish:\n%v", *name, util.Pformat(torchJob))
 		time.Sleep(5 * time.Second)
 	}
 
-	if tfJob == nil {
-		return *name, fmt.Errorf("Failed to get TFJob %v", *name)
+	if torchJob == nil {
+		return *name, fmt.Errorf("Failed to get PyTorchJob %v", *name)
 	}
 
-	if tfJob.Status.State != tfv1alpha1.StateSucceeded {
+	if torchJob.Status.State != torchv1alpha1.StateSucceeded {
 		// TODO(jlewi): Should we clean up the job.
-		return *name, fmt.Errorf("TFJob %v did not succeed;\n %v", *name, util.Pformat(tfJob))
+		return *name, fmt.Errorf("PyTorchJob %v did not succeed;\n %v", *name, util.Pformat(torchJob))
 	}
 
-	if tfJob.Spec.RuntimeId == "" {
-		return *name, fmt.Errorf("TFJob %v doesn't have a RuntimeId", *name)
+	if torchJob.Spec.RuntimeId == "" {
+		return *name, fmt.Errorf("PyTorchJob %v doesn't have a RuntimeId", *name)
 	}
 
 	// Loop over each replica and make sure the expected resources were created.
 	for _, r := range original.Spec.ReplicaSpecs {
-		baseName := strings.ToLower(string(r.TFReplicaType))
+		baseName := strings.ToLower(string(r.PyTorchReplicaType))
 
-		for i := 0; i < int(*r.Replicas); i += 1 {
-			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, tfJob.Spec.RuntimeId, i)
+		for i := 0; i < int(*r.Replicas); i++ {
+			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, torchJob.Spec.RuntimeId, i)
 
-			_, err := kubeCli.BatchV1().Jobs(*namespace).Get(jobName, metav1.GetOptions{})
+			_, err := torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
 
 			if err != nil {
-				return *name, fmt.Errorf("TFob %v did not create Job %v for ReplicaType %v Index %v", *name, jobName, r.TFReplicaType, i)
+				return *name, fmt.Errorf("PyTorchJob %v did not create Job %v for ReplicaType %v Index %v", *name, jobName, r.PyTorchReplicaType, i)
 			}
 		}
 	}
 
 	// Delete the job and make sure all subresources are properly garbage collected.
-	if err := tfJobClient.KubeflowV1alpha1().TFJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
-		log.Fatalf("Failed to delete TFJob %v; error %v", *name, err)
+	if err := torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
+		log.Fatalf("Failed to delete PyTorchJob %v; error %v", *name, err)
 	}
 
 	// Define sets to keep track of Job controllers corresponding to Replicas
@@ -158,10 +161,10 @@ func run() (string, error) {
 
 	// Loop over each replica and make sure the expected resources are being deleted.
 	for _, r := range original.Spec.ReplicaSpecs {
-		baseName := strings.ToLower(string(r.TFReplicaType))
+		baseName := strings.ToLower(string(r.PyTorchReplicaType))
 
-		for i := 0; i < int(*r.Replicas); i += 1 {
-			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, tfJob.Spec.RuntimeId, i)
+		for i := 0; i < int(*r.Replicas); i++ {
+			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, torchJob.Spec.RuntimeId, i)
 
 			jobs[jobName] = true
 		}
@@ -170,7 +173,7 @@ func run() (string, error) {
 	// Wait for all jobs and deployment to be deleted.
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime) && len(jobs) > 0; {
 		for k := range jobs {
-			_, err := kubeCli.BatchV1().Jobs(*namespace).Get(k, metav1.GetOptions{})
+			_, err := client.BatchV1().Jobs(*namespace).Get(k, metav1.GetOptions{})
 			if k8s_errors.IsNotFound(err) {
 				// Deleting map entry during loop is safe.
 				// See: https://stackoverflow.com/questions/23229975/is-it-safe-to-remove-selected-keys-from-golang-map-within-a-range-loop
@@ -186,18 +189,38 @@ func run() (string, error) {
 	}
 
 	if len(jobs) > 0 {
-		return *name, fmt.Errorf("Not all Job controllers were successfully deleted for TFJob %v.", *name)
+		return *name, fmt.Errorf("Not all Job controllers were successfully deleted for PyTorchJob %v.", *name)
 	}
 
 	return *name, nil
 }
 
+func homeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
+	}
+	return os.Getenv("USERPROFILE") // windows
+}
+
+func runCmd(cmd *exec.Cmd) error {
+	var waitStatus syscall.WaitStatus
+	err := cmd.Run()
+	if err != nil {
+		// Did the command fail because of an unsuccessful exit code
+		if exitError, ok := err.(*exec.ExitError); ok {
+			waitStatus = exitError.Sys().(syscall.WaitStatus)
+			output, _ := cmd.CombinedOutput()
+			log.Infof("exitcode %d: %s", waitStatus.ExitStatus(), string(output))
+		}
+	} else {
+		// Command was successful
+		_ = cmd.ProcessState.Sys().(syscall.WaitStatus)
+	}
+	return err
+}
+
 func main() {
 	flag.Parse()
-
-	if *image == "" {
-		log.Fatalf("--image must be provided.")
-	}
 
 	type Result struct {
 		Error error
@@ -205,13 +228,13 @@ func main() {
 	}
 	c := make(chan Result)
 
-	for i := 0; i < *numJobs; i += 1 {
+	for i := 0; i < *numJobs; i++ {
 		go func() {
 			name, err := run()
 			if err != nil {
-				log.Errorf("TFJob %v didn't run successfully; %v", name, err)
+				log.Errorf("Job %v didn't run successfully; %v", name, err)
 			} else {
-				log.Infof("TFJob %v ran successfully", name)
+				log.Infof("Job %v ran successfully", name)
 			}
 			c <- Result{
 				Name:  name,
@@ -231,22 +254,22 @@ func main() {
 			} else {
 				numFailed += 1
 			}
-		case <-time.After(time.Until(endTime)):
-			log.Errorf("Timeout waiting for TFJob to finish.")
+		case <-time.After(endTime.Sub(time.Now())):
+			log.Errorf("Timeout waiting for PyTorchJob to finish.")
 			fmt.Println("timeout 2")
 		}
 	}
 
 	if numSucceded+numFailed < *numJobs {
-		log.Errorf("Timeout waiting for jobs to finish; only %v of %v TFJobs completed.", numSucceded+numFailed, *numJobs)
+		log.Errorf("Timeout waiting for jobs to finish; only %v of %v PyTorchJobs completed.", numSucceded+numFailed, *numJobs)
 	}
 
 	// Generate TAP (https://testanything.org/) output
 	fmt.Println("1..1")
 	if numSucceded == *numJobs {
-		fmt.Println("ok 1 - Successfully ran TFJob")
+		fmt.Println("ok 1 - Successfully ran PyTorchJob")
 	} else {
-		fmt.Printf("not ok 1 - Running TFJobs failed \n")
+		fmt.Printf("not ok 1 - Running PyTorchJobs failed \n")
 		// Exit with non zero exit code for Helm tests.
 		os.Exit(1)
 	}

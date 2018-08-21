@@ -19,9 +19,7 @@
 Train mnist, see more explanation at http://mxnet.io/tutorials/python/mnist.html
 """
 import os
-
 import time
-
 import argparse
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -30,7 +28,6 @@ from common.util import download_file
 import mxnet as mx
 import numpy as np
 import gzip, struct
-
 
 def read_data(label, image):
     """
@@ -44,7 +41,6 @@ def read_data(label, image):
         magic, num, rows, cols = struct.unpack(">IIII", fimg.read(16))
         image = np.fromstring(fimg.read(), dtype=np.uint8).reshape(len(label), rows, cols)
     return (label, image)
-
 
 def to4d(img):
     """
@@ -67,18 +63,6 @@ def get_mnist_iter(args, kv):
     return (train, val)
 
 if __name__ == '__main__':
-
-
-    env_dist = os.environ
-    print env_dist.get('DMLC_ROLE')
-    print env_dist.get('DMLC_PS_ROOT_PORT')
-    print env_dist.get('DMLC_PS_ROOT_URI')
-    print env_dist.get('DMLC_NUM_SERVER')
-    print env_dist.get('DMLC_NUM_WORKER')
-
-    print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-
-
     # parse args
     parser = argparse.ArgumentParser(description="train mnist",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)

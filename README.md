@@ -89,7 +89,7 @@ ks generate mxnet-operator mxnet-operator
 ks apply ${ENVIRONMENT} -c mxnet-operator
 ```
 
-## Creating a job
+### Creating a job
 
 You create a job by defining a MXJob and then creating it with.
 

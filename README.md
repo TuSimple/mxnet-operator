@@ -145,11 +145,11 @@ Please verify your image is available for gpu distributed training .
 For example ,
 
 ```
-              command: ["python"]
-              args: ["/incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","1","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
-              resources:
-                limits:
-                  nvidia.com/gpu: 1
+command: ["python"]
+args: ["/incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","1","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
+resources:
+  limits:
+    nvidia.com/gpu: 1
 ```
 
 Mxnet-operator will arrange the pod to nodes which satisfied the gpu limit .

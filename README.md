@@ -179,7 +179,7 @@ metadata:
 spec:
   RuntimeId: aycw
   jobMode: dist
-  mxImage: jzp1025/mxnet:test
+  mxImage: mxjob/mxnet:gpu
   replicaSpecs:
   - PsRootPort: 9000
     mxReplicaType: SCHEDULER
@@ -193,7 +193,7 @@ spec:
           - train_mnist.py
           command:
           - python
-          image: jzp1025/mxnet:test
+          image: mxjob/mxnet:gpu
           name: mxnet
           resources: {}
           workingDir: /incubator-mxnet/example/image-classification
@@ -210,7 +210,7 @@ spec:
           - train_mnist.py
           command:
           - python
-          image: jzp1025/mxnet:test
+          image: mxjob/mxnet:gpu
           name: mxnet
           resources: {}
           workingDir: /incubator-mxnet/example/image-classification
@@ -230,7 +230,7 @@ spec:
           - --kv-store=dist_device_sync
           command:
           - python
-          image: jzp1025/mxnet:test
+          image: mxjob/mxnet:gpu
           name: mxnet
           resources: {}
           workingDir: /incubator-mxnet/example/image-classification

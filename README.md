@@ -5,11 +5,10 @@
 MXJob provides a Kubernetes custom resource that makes it easy to
 run distributed or non-distributed MXNet jobs on Kubernetes.
 
-Using a Custom Resource Definition (CRD) gives users the ability to create and manage MX Jobs just like builtin K8s resources. For example to
-create a job
+Using a Custom Resource Definition (CRD) gives users the ability to create and manage MX Jobs just like builtin K8s resources. For example to create a job
 
 ```
-kubectl create -f examples/mxjob_sample/mx_job_dist.yaml 
+kubectl create -f examples/mx_job_dist.yaml 
 ```
 
 To list jobs
@@ -60,64 +59,42 @@ incubator-mxnet : v1.2.0
 
 ## Installing the MXJob CRD and operator on your k8s cluster
 
-git clone https://github.com/TuSimple/mxnet-operator.git
+### Deploy Kubeflow
 
-kubectl create -f ./examples/crd/crd.yaml
+mxnet-operator has been contributed to kubeflow , please refer to the [kubeflow installation](https://www.kubeflow.org/docs/started/getting-started/) first .
 
-kubectl create -f ./examples/mx_operator_deploy.yaml
+### Verify that MXNet support is included in your Kubeflow deployment
+
+Check that the MXNet custom resource is installed
+
+```
+kubectl get crd
+```
+
+The output should include `mxjobs.kubeflow.org`
+
+```
+NAME                                           AGE
+...
+mxjobs.kubeflow.org                       4d
+...
+```
+
+If it is not included you can add it as follows
+
+```
+cd ${KSONNET_APP}
+ks pkg install kubeflow/mxnet-job
+ks generate mxnet-operator mxnet-operator
+ks apply ${ENVIRONMENT} -c mxnet-operator
+```
 
 ## Creating a job
 
 You create a job by defining a MXJob and then creating it with.
 
 ```
-kubectl create -f https://raw.githubusercontent.com/jzp1025/mx-operator/master/examples/mxjob_sample/mx_job_dist.yaml 
-```
-
-In this case the job spec looks like the following
-
-```yaml
-apiVersion: "kubeflow.org/v1alpha1"
-kind: "MXJob"
-metadata:
-  name: "example-dist-job"
-spec:
-  jobMode: "dist"
-  replicaSpecs:
-    - replicas: 1
-      mxReplicaType: SCHEDULER
-      PsRootPort: 9000
-      template:
-        spec:
-          containers:
-            - image: jzp1025/mxnet:test
-              name: mxnet
-              command: ["python"]
-              args: ["train_mnist.py"]
-              workingDir: "/incubator-mxnet/example/image-classification"
-          restartPolicy: OnFailure
-    - replicas: 1 
-      mxReplicaType: SERVER
-      template:
-        spec:
-          containers:
-            - image: jzp1025/mxnet:test
-              name: mxnet
-              command: ["python"]
-              args: ["train_mnist.py"]
-              workingDir: "/incubator-mxnet/example/image-classification"
-          restartPolicy: OnFailure
-    - replicas: 1
-      mxReplicaType: WORKER
-      template:
-        spec:
-          containers:
-            - image: jzp1025/mxnet:test
-              name: mxnet
-              command: ["python"]
-              args: ["train_mnist.py","--num-epochs=10","--num-layers=2","--kv-store=dist_device_sync"]
-              workingDir: "/incubator-mxnet/example/image-classification"
-          restartPolicy: OnFailure
+kubectl create -f examples/mx_job_dist.yaml 
 ```
 
 Each replicaSpec defines a set of MXNet processes.
@@ -159,10 +136,23 @@ For each replica you define a **template** which is a K8s
 The template allows you to specify the containers, volumes, etc... that
 should be created for each replica.
 
-
 ### Using GPUs
 
-not avaliable yet
+Mxnet-operator is now supporting the gpu training .
+
+Please verify your image is available for gpu distributed training .
+
+For example ,
+
+```
+              command: ["python"]
+              args: ["/incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","1","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+```
+
+Mxnet-operator will arrange the pod to nodes which satisfied the gpu limit .
 
 ## Monitoring your job
 

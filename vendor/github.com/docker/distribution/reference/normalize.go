@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/docker/distribution/digestset"
-	"github.com/opencontainers/go-digest"
 )
 
 var (

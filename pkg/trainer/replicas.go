@@ -17,8 +17,8 @@ package trainer
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -28,10 +28,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
-	mxv1alpha1 "github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/v1alpha1"
-	"github.com/kubeflow/mxnet-operator/pkg/util/k8sutil"
 	"github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/helper"
+	mxv1alpha1 "github.com/kubeflow/mxnet-operator/pkg/apis/mxnet/v1alpha1"
 	"github.com/kubeflow/mxnet-operator/pkg/util"
+	"github.com/kubeflow/mxnet-operator/pkg/util/k8sutil"
 )
 
 const (
@@ -196,20 +196,19 @@ func (s *MXReplicaSet) CreatePodWithIndex(index int32) (*v1.Pod, error) {
 		}
 	}
 
-
 	// Add MX_CONFIG environment variable.
 	for i := range pod.Spec.Containers {
 		// We can't get c in the loop variable because that would be by value so our modifications
 		// wouldn't have any effect.
 		c := &pod.Spec.Containers[i]
-		
+
 		//if c.Name != mxv1alpha1.DefaultMXContainer {
 		//	continue
 		//}
 		if len(c.Env) == 0 {
 			c.Env = make([]v1.EnvVar, 6)
 		}
-		
+
 		for _, r := range s.Job.job.Spec.ReplicaSpecs {
 			switch r.MXReplicaType {
 			case mxv1alpha1.SCHEDULER:
@@ -533,38 +532,38 @@ func (s *MXReplicaSet) SyncPods() error {
 // SyncServices will try to check current services for this MXReplicaSet and try to make it as desired.
 func (s *MXReplicaSet) SyncServices() error {
 	//if s.Spec.MXReplicaType == mxv1alpha1.SCHEDULER{
-		for index := int32(0); index < *s.Spec.Replicas; index++ {
-			_, err := s.ClientSet.CoreV1().Services(s.Job.job.ObjectMeta.Namespace).Get(s.genName(index), meta_v1.GetOptions{})
+	for index := int32(0); index < *s.Spec.Replicas; index++ {
+		_, err := s.ClientSet.CoreV1().Services(s.Job.job.ObjectMeta.Namespace).Get(s.genName(index), meta_v1.GetOptions{})
 
-	   		s.contextLogger.Infof("Service: %v check ++++++++++++++++++++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",index)
-			if err != nil {
-				s.contextLogger.Infof("Service: %v check error ++++++++++++++++++++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",err)
-			}
-
-			if err != nil && k8s_errors.IsNotFound(err) {
-				s.contextLogger.Infof("Service: %v not found, create new one.", s.genName(index))
-				// Create the service
-				createdService, err := s.CreateServiceWithIndex(index)
-
-				// If the service already exists do nothing.
-				if err != nil {
-					if k8s_errors.IsAlreadyExists(err) {
-						s.contextLogger.Infof("Service: %v already exists.", s.genName(index))
-						continue
-					}
-					s.recorder.Eventf(s.Job.job, v1.EventTypeWarning, FailedCreateReason, "Error creating: %v", err)
-					return k8sErrors.NewAggregate([]error{fmt.Errorf("Creating Service %v returned error.", createdService.ObjectMeta.Name), err})
-				}
-
-				s.recorder.Eventf(s.Job.job, v1.EventTypeNormal, SuccessfulCreateReason, "Created Service: %v", createdService.Name)
-				continue
-			}
-
-			if err != nil {
-				continue
-			}
-			s.contextLogger.Infof("Service: %v error ++++++++++++++++++++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",err)
+		s.contextLogger.Infof("Service: %v check ++++++++++++++++++++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", index)
+		if err != nil {
+			s.contextLogger.Infof("Service: %v check error ++++++++++++++++++++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", err)
 		}
+
+		if err != nil && k8s_errors.IsNotFound(err) {
+			s.contextLogger.Infof("Service: %v not found, create new one.", s.genName(index))
+			// Create the service
+			createdService, err := s.CreateServiceWithIndex(index)
+
+			// If the service already exists do nothing.
+			if err != nil {
+				if k8s_errors.IsAlreadyExists(err) {
+					s.contextLogger.Infof("Service: %v already exists.", s.genName(index))
+					continue
+				}
+				s.recorder.Eventf(s.Job.job, v1.EventTypeWarning, FailedCreateReason, "Error creating: %v", err)
+				return k8sErrors.NewAggregate([]error{fmt.Errorf("Creating Service %v returned error.", createdService.ObjectMeta.Name), err})
+			}
+
+			s.recorder.Eventf(s.Job.job, v1.EventTypeNormal, SuccessfulCreateReason, "Created Service: %v", createdService.Name)
+			continue
+		}
+
+		if err != nil {
+			continue
+		}
+		s.contextLogger.Infof("Service: %v error ++++++++++++++++++++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", err)
+	}
 	//}
 
 	return nil

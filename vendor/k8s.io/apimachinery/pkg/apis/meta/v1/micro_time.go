@@ -23,7 +23,6 @@ import (
 	openapi "k8s.io/kube-openapi/pkg/common"
 
 	"github.com/go-openapi/spec"
-	"github.com/google/gofuzz"
 )
 
 const RFC3339Micro = "2006-01-02T15:04:05.000000Z07:00"

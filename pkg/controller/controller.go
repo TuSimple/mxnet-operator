@@ -126,10 +126,10 @@ func New(kubeClient kubernetes.Interface, mxJobClient mxjobclient.Interface,
 	)
 
 	controller := &Controller{
-		KubeClient:  kubeClient,
-		MXJobClient: mxJobClient,
-		WorkQueue:   workqueue.NewNamedRateLimitingQueue(rateLimiter, "MXjobs"),
-		recorder:    recorder,
+		KubeClient:           kubeClient,
+		MXJobClient:          mxJobClient,
+		WorkQueue:            workqueue.NewNamedRateLimitingQueue(rateLimiter, "MXjobs"),
+		recorder:             recorder,
 		jobs:                 make(map[string]*trainer.TrainingJob),
 		config:               config,
 		enableGangScheduling: enableGangScheduling,

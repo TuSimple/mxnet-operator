@@ -40,7 +40,6 @@ func ValidateMXJobSpec(c *mxv1.MXJobSpec) error {
 			chiefExists = true
 		}
 
-
 		// Make sure the replica type is valid.
 		validReplicaTypes := []mxv1.MXReplicaType{mxv1.SCHEDULER, mxv1.SERVER, mxv1.WORKER}
 

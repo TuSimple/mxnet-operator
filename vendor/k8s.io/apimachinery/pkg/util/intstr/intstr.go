@@ -28,7 +28,6 @@ import (
 
 	"github.com/go-openapi/spec"
 	"github.com/golang/glog"
-	"github.com/google/gofuzz"
 )
 
 // IntOrString is a type that can hold an int32 or a string.  When used in

@@ -17,11 +17,7 @@ package generator
 import (
 	"fmt"
 	"testing"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
-
 
 func TestGenGeneralName(t *testing.T) {
 	testRType := "worker"

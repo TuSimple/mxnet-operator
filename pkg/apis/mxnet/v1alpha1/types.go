@@ -27,9 +27,8 @@ const (
 	// Value of the APP label that gets applied to a lot of entities.
 	AppLabel = "mxnet-job"
 	// Defaults for the Spec
-	Replicas = 1
+	Replicas   = 1
 	PsRootPort = 9091
-
 )
 
 // +genclient
@@ -126,7 +125,7 @@ type MXReplicaSpec struct {
 	Template *v1.PodTemplateSpec `json:"template,omitempty" protobuf:"bytes,3,opt,name=template"`
 	// PsRootPort is the port to use for MX services.
 	MXReplicaType `json:"mxReplicaType"`
-	PsRootPort *int32 `json:"PsRootPort,omitempty" protobuf:"varint,1,opt,name=PsRootPort"`
+	PsRootPort    *int32 `json:"PsRootPort,omitempty" protobuf:"varint,1,opt,name=PsRootPort"`
 }
 
 // MXJobPhase is a enum to store the phase of mx job

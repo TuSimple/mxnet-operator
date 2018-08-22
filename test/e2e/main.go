@@ -36,8 +36,8 @@ type mxReplicaType mxv1alpha1.MXReplicaType
 
 func (mxrt mxReplicaType) toSpec(replica int32) *mxv1alpha1.MXReplicaSpec {
 	return &mxv1alpha1.MXReplicaSpec{
-		Replicas:           proto.Int32(replica),
-		PsRootPort:         proto.Int32(9001),
+		Replicas:      proto.Int32(replica),
+		PsRootPort:    proto.Int32(9001),
 		MXReplicaType: mxv1alpha1.MXReplicaType(mxrt),
 		Template: &v1.PodTemplateSpec{
 			Spec: v1.PodSpec{
@@ -93,7 +93,7 @@ func run() (string, error) {
 		Spec: mxv1alpha1.MXJobSpec{
 			ReplicaSpecs: []*mxv1alpha1.MXReplicaSpec{
 				mxReplicaType(mxv1alpha1.SCHEDULER).toSpec(1),
-				mxReplicaType(mxv1alpha1.SERVER).toSpec(2),	
+				mxReplicaType(mxv1alpha1.SERVER).toSpec(2),
 				mxReplicaType(mxv1alpha1.WORKER).toSpec(2),
 			},
 		},

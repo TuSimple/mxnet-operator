@@ -28,8 +28,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/opencontainers/go-digest"
 )
 
 const (

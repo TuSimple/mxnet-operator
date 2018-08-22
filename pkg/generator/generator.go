@@ -15,12 +15,8 @@
 package generator
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 const (
@@ -40,4 +36,3 @@ func GenGeneralName(mxJobName, rtype, index string) string {
 func GenDNSRecord(mxJobName, rtype, index, namespace string) string {
 	return fmt.Sprintf("%s.%s.svc.cluster.local", GenGeneralName(mxJobName, rtype, index), namespace)
 }
-

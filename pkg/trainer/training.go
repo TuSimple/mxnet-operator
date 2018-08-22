@@ -125,8 +125,8 @@ func (j *TrainingJob) ClusterSpec() ClusterSpec {
 
 	for _, p := range j.Replicas {
 		var replicaNames string = fmt.Sprintf("%v", p.genName(0))
-            
-  		if string(p.Spec.MXReplicaType) == "SCHEDULER" {
+
+		if string(p.Spec.MXReplicaType) == "SCHEDULER" {
 			clusterSpec["ip"] = replicaNames
 		}
 
@@ -191,8 +191,8 @@ func (j *TrainingJob) GetStatus() (mxv1alpha1.State, []*mxv1alpha1.MXReplicaStat
 		state = mxv1alpha1.StateRunning
 	} else if chiefState == mxv1alpha1.ReplicaStateFailed {
 		log.Errorf("GetState() get a failed ~~~~~~~~~~~~~-----------------------------")
-		log.Errorf("chiefState: %v" , chiefState)
-		log.Errorf("chief: %v",chief)
+		log.Errorf("chiefState: %v", chiefState)
+		log.Errorf("chief: %v", chief)
 		state = mxv1alpha1.StateFailed
 	} else if chiefState == mxv1alpha1.ReplicaStateSucceeded {
 		state = mxv1alpha1.StateSucceeded
@@ -356,7 +356,7 @@ func (j *TrainingJob) Reconcile(config *mxv1alpha1.ControllerConfig, enableGangS
 
 	// Only sync pods and services if we are running.
 	if j.status.Phase == mxv1alpha1.MXJobPhaseCreating || j.status.Phase == mxv1alpha1.MXJobPhaseRunning {
-		
+
 		// sync pods
 		for _, rc := range j.Replicas {
 			err := rc.SyncPods()
@@ -372,7 +372,6 @@ func (j *TrainingJob) Reconcile(config *mxv1alpha1.ControllerConfig, enableGangS
 				j.contextLogger.Errorf("SyncServices error: %v", err)
 			}
 		}
-
 
 		if err := j.updateCRDStatus(); err != nil {
 			j.contextLogger.Warningf("Job %v; failed to update status error: %v", j.job.ObjectMeta.Name, err)

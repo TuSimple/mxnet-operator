@@ -3,6 +3,7 @@ package reflect2
 import (
 	"reflect"
 	"unsafe"
+
 	"github.com/modern-go/concurrent"
 )
 
@@ -136,7 +137,7 @@ type frozenConfig struct {
 func (cfg Config) Froze() *frozenConfig {
 	return &frozenConfig{
 		useSafeImplementation: cfg.UseSafeImplementation,
-		cache:                 concurrent.NewMap(),
+		cache: concurrent.NewMap(),
 	}
 }
 

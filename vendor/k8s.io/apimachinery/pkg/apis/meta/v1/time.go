@@ -23,7 +23,6 @@ import (
 	openapi "k8s.io/kube-openapi/pkg/common"
 
 	"github.com/go-openapi/spec"
-	"github.com/google/gofuzz"
 )
 
 // Time is a wrapper around time.Time which supports correct

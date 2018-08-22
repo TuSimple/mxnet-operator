@@ -36,7 +36,7 @@ func SetDefaults_MXJob(obj *MXJob) {
 
 		if r.PsRootPort == nil {
 			r.PsRootPort = proto.Int32(PsRootPort)
-}	
+		}
 		if string(r.MXReplicaType) == "" {
 			r.MXReplicaType = WORKER
 		}

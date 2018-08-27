@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/emicklei/go-restful"
 	"github.com/go-openapi/spec"
 )
 

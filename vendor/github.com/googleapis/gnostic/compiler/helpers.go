@@ -16,6 +16,7 @@ package compiler
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"regexp"
 	"sort"
 	"strconv"

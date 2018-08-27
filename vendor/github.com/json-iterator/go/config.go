@@ -2,13 +2,12 @@ package jsoniter
 
 import (
 	"encoding/json"
+	"github.com/modern-go/concurrent"
+	"github.com/modern-go/reflect2"
 	"io"
 	"reflect"
 	"sync"
 	"unsafe"
-
-	"github.com/modern-go/concurrent"
-	"github.com/modern-go/reflect2"
 )
 
 // Config customize how the API should behave.

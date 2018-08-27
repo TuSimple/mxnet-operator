@@ -19,11 +19,10 @@ limitations under the License.
 package internalinterfaces
 
 import (
-	time "time"
-
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	cache "k8s.io/client-go/tools/cache"
 	versioned "k8s.io/code-generator/_examples/crd/clientset/versioned"
+	time "time"
 )
 
 type NewInformerFunc func(versioned.Interface, time.Duration) cache.SharedIndexInformer

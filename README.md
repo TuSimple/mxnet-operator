@@ -1,4 +1,4 @@
-# mxnet-operator: A Kubernetes operator for mxnet jobs
+# mxnet-operator: a Kubernetes operator for mxnet jobs
 
 ## Overview
 

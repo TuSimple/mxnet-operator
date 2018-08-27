@@ -44,16 +44,6 @@ type MXJob struct {
 	Status            MXJobStatus `json:"status"`
 }
 
-// JobMode mxnet job mode
-type JobMode string
-
-const (
-	// LocalJob job kind local
-	LocalJob JobMode = "local"
-	// DistJob job kind distribution
-	DistJob JobMode = "dist"
-)
-
 // MXJobSpec structure for storing the MXJob specifications
 type MXJobSpec struct {
 	// TODO(jlewi): Can we we get rid of this and use some value from Kubernetes or a random ide.
@@ -73,9 +63,6 @@ type MXJobSpec struct {
 
 	// SchedulerName specifies the name of scheduler which should handle the MXJob
 	SchedulerName string `json:"schedulerName,omitempty"`
-
-	// JobMode MXNet training job mode: local, dist
-	JobMode `json:"jobMode"`
 }
 
 // CleanupPodPolicy defines all kinds of types of cleanPodPolicy.
@@ -111,7 +98,7 @@ const (
 
 const (
 	DefaultMXContainer string = "mxnet"
-	DefaultMXImage     string = "jzp1025/mxnet:test"
+	DefaultMXImage     string = "mxjob/mxnet:gpu"
 )
 
 // MXReplicaSpec might be useful if you wanted to have a separate set of workers to do eval.

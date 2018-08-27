@@ -300,7 +300,7 @@ server-76no-1
 
 ## Contributing
 
-Please refer to the [developer_guide](./docs/developer_guide.md)
+Please refer to the [developer_guide](https://github.com/kubeflow/tf-operator/blob/master/developer_guide.md)
 
 ## Community
 

@@ -1,4 +1,4 @@
-# K8s Custom Resource and Operator For MXNet jobs
+# mxnet-operator: A Kubernetes operator for mxnet jobs
 
 ## Overview
 
